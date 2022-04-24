@@ -5,6 +5,7 @@ const lightWallet = require('eth-lightwallet');
 const makeMnemonic = require('./walletHelper');
 
 
+// 
 // 함수 앞에 async 예약어 설정
 // http 통신을 하는 비동기 처리 코드 앞에 await
 // 시간 나면 web3.eth.accounts 만들기
