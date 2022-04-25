@@ -1,6 +1,4 @@
-const walletMake = require('./walletHelper');
 const lightWallet = require('eth-lightwallet');
-const makeMnemonic = require('./walletHelper');
 const models = require('../models');
 const e = require('express');
 
