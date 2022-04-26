@@ -1,14 +1,12 @@
 const lightWallet = require("eth-lightwallet");
 const models = require("../models");
 const e = require("express");
-const Web3 = require("web3");
+const getWeb3 = require("./walletHelper");
+const web3 = getWeb3();
 
 module.exports = {
   user: {
     post: async (req, res) => {
-      const web3 = new Web3(
-        new Web3.providers.HttpProvider("http://127.0.0.1:7545")
-      );
       const { name, password } = req.body;
 
       // 유저 정보 받아오기
