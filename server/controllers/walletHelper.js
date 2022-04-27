@@ -1,5 +1,4 @@
 const Web3 = require("web3");
-const models = require("../models");
 
 function getWeb3() {
   const web3 = new Web3(
