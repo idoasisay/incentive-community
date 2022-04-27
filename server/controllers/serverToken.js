@@ -1,5 +1,5 @@
 const lightWallet = require("eth-lightwallet");
-const models = require("../models");
+const { User } = require("../models");
 const e = require("express");
 const getWeb3 = require("./walletHelper");
 const web3 = getWeb3();
@@ -9,7 +9,7 @@ const {
 } = require("../source/tokenInfomation.json");
 
 async function getServerAccount() {
-  return models.Users.findOne({
+  return User.findOne({
     where: { userName: "server" },
   }).then((data) => data);
 }
@@ -20,7 +20,7 @@ module.exports = {
       const { name } = req.body;
       const server = await getServerAccount();
 
-      models.Users.findOne({ where: { userName: name } }).then((user) => {
+      User.findOne({ where: { userName: name } }).then((user) => {
         let contract = new web3.eth.Contract(contractABI, contractAddress, {
           from: server.address,
         });

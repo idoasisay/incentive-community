@@ -1,4 +1,4 @@
-const models = require("../models");
+const { User } = require("../models");
 const e = require("express");
 const getWeb3 = require("./walletHelper");
 
@@ -10,10 +10,10 @@ module.exports = {
       const { name, password } = req.body;
 
       try {
-        const ganache = await models.Users.findOne({
+        const ganache = await User.findOne({
           where: { userName: "ganache" },
         });
-        models.Users.findOne({ where: { userName: name } }).then((data) => {
+        User.findOne({ where: { userName: name } }).then((data) => {
           const { userName, address, privateKey } = data;
 
           // 개인 계정 등록
@@ -56,7 +56,7 @@ module.exports = {
       //TODO
       const accounts = await web3.eth.getAccounts();
       // 가나슈가 있는지 확인하고 없으면 생성하자
-      models.Users.findOrCreate({
+      User.findOrCreate({
         where: {
           userName: "ganache",
         },
@@ -64,7 +64,7 @@ module.exports = {
           password: "ganacheServer",
           address: accounts[0],
           privateKey:
-            "4b0fa79e55dbcf1e907dbb2c87aba545780203009276e56966cc3e39d078f7c6",
+            "df6724dcf00c43fa0e000a01792fc830e77a7f77483376f98fbcd00203890988",
         },
       }).then(([user, created]) => res.json(user));
     },

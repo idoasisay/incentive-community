@@ -1,5 +1,4 @@
-const lightWallet = require("eth-lightwallet");
-const models = require("../models");
+const { User } = require("../models");
 const e = require("express");
 const getWeb3 = require("./walletHelper");
 const web3 = getWeb3();
@@ -12,7 +11,7 @@ module.exports = {
       // 유저 정보 받아오기
 
       try {
-        models.Users.findOrCreate({
+        User.findOrCreate({
           where: {
             userName: name,
             password: password,
@@ -27,7 +26,7 @@ module.exports = {
             res.status(409).send("User exists");
           } else {
             const wallet = web3.eth.accounts.create();
-            models.Users.update(
+            User.update(
               {
                 address: wallet.address,
                 privateKey: wallet.privateKey,
