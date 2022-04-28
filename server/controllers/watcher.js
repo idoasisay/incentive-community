@@ -11,14 +11,37 @@ const provider = new Web3.providers.WebsocketProvider(GANACHE_SERVER_SOCKET);
 const web3 = new Web3(provider);
 
 function watchEtherTransfers() {
+  // 컨트랙트 접근
   const tokenContract = new web3.eth.Contract(contractABI, contractAddress);
-  tokenContract.events.Transfer({}, (err, event) => {
+
+  // 컨트랙트에 Transfer 이벤트에 listen
+  tokenContract.events.Transfer({}, async (err, event) => {
+    // 에러 처리
     if (err) {
       console.log(err);
       return;
     }
-    const { from, to, amount } = event.returnValues;
-    console.log({ from, to, amount });
+
+    // 이벤트로 받은 내용 중에 from, to address만 발췌
+    const { from, to } = event.returnValues;
+
+    // 발췌한 주소로 토큰 확인
+    let toAmount = await tokenContract.methods.balanceOf(to).call();
+    let fromAmount = await tokenContract.methods.balanceOf(from).call();
+
+    // String 처리를 해 줬어야 했는데... Number 처리... DB 수정하면 변경
+    fromAmount = fromAmount / 1000000000000000000;
+    toAmount = toAmount / 1000000000000000000;
+
+    // User 확인
+    const fromUser = await User.findOne({ where: { address: from } });
+    const toUser = await User.findOne({ where: { address: to } });
+
+    // User DB 업데이트
+    if (fromUser !== null)
+      User.update({ amount: fromAmount }, { where: { address: from } });
+    if (toUser !== null)
+      User.update({ amount: toAmount }, { where: { address: to } });
   });
 }
 
