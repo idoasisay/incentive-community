@@ -1,20 +1,21 @@
+const env = require("dotenv");
 const { User } = require("../models");
-const e = require("express");
-const getWeb3 = require("./walletHelper");
+const web3Helper = require("./walletHelper");
 
-const web3 = getWeb3();
+const web3 = web3Helper.getWeb3();
+
 // 가나슈 로컬 테스트넷에서 1EH 받는 API 작성
 module.exports = {
   ethFaucet: {
     post: async (req, res) => {
-      const { name, password } = req.body;
-
       try {
-        const ganache = await User.findOne({
-          where: { userName: "ganache" },
-        });
-        User.findOne({ where: { userName: name } }).then((data) => {
-          const { userName, address, privateKey } = data;
+        // 유저, 가나슈 계정
+        const ganache = await User.findOne({ where: { userName: "ganache" } });
+        const user = await User.findOne({ where: { userName: req.body.name } });
+
+        if (!user) res.status(409).json({ message: "유저가 없습니다." });
+        else {
+          const { userName, address, privateKey } = user.dataValues;
 
           // 개인 계정 등록
           web3.eth.accounts.privateKeyToAccount(privateKey);
@@ -33,7 +34,7 @@ module.exports = {
               web3.eth.sendSignedTransaction(data.rawTransaction);
               web3.eth.getBalance(address).then((bal) => {
                 res.json({
-                  message: "Faucet Successed",
+                  message: "1 이더 지급이 완료되었습니다.",
                   data: {
                     userName: userName,
                     address: address,
@@ -43,7 +44,7 @@ module.exports = {
                 });
               });
             });
-        });
+        }
       } catch (err) {
         console.error(err);
       }

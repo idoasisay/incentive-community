@@ -1,8 +1,5 @@
-const lightWallet = require("eth-lightwallet");
 const { User } = require("../models");
-const e = require("express");
-const getWeb3 = require("./walletHelper");
-const web3 = getWeb3();
+const web3Helper = require("./walletHelper");
 const {
   contractABI,
   contractAddress,
@@ -14,45 +11,43 @@ async function getServerAccount() {
   }).then((data) => data);
 }
 
+const web3 = web3Helper.getWeb3();
+
 module.exports = {
   serverToken: {
     post: async (req, res) => {
-      const { name } = req.body;
       const server = await getServerAccount();
 
-      User.findOne({ where: { userName: name } }).then((user) => {
-        let contract = new web3.eth.Contract(contractABI, contractAddress, {
-          from: server.address,
-        });
+      User.findOne({ where: { userName: req.body.name } }).then((user) => {
+        if(!user) res.status(409).json({ message: "유저가 없습니다." });
 
-        var data = contract.methods
-          .transfer(user.address, "1000000000000000000")
-          .encodeABI();
-        var rawTransaction = { to: contractAddress, gas: 100000, data: data };
+        const contract = new web3.eth.Contract(contractABI, contractAddress, { from: server.address });
+
+        const data = contract.methods.transfer(user.address, "1000000000000000000").encodeABI();
+        const rawTransaction = { to: contractAddress, gas: 100000, data: data };
 
         web3.eth.accounts
           .signTransaction(rawTransaction, server.privateKey)
-          .then((signedTx) =>
-            web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-          )
-          .then((req) => {
-            getTOKENBalanceOf(user.address).then((balance) => {
-              res.json({
-                message: "Serving Successed",
-                data: {
-                  username: user.username,
-                  address: user.address,
-                  txHash: req.transactionHash,
-                  tokenBalance: balance,
-                },
-              });
-            });
-          });
+          .then((signedTx) => web3.eth.sendSignedTransaction(signedTx.rawTransaction))
+          .then(async (req) => {
+            const balance = await getTOKENBalanceOf(user.address);
 
-        //GET TOKEN BALANCE FUNCTION ////////////////////////////////
-        async function getTOKENBalanceOf(address) {
-          return await contract.methods.balanceOf(address).call();
-        }
+            // 응답
+            res.status(201).json({
+              message: "1 TDD를 받았습니다.",
+              data: {
+                username: user.username,
+                address: user.address,
+                txHash: req.transactionHash,
+                tokenBalance: balance,
+              },
+            });
+
+            // 잔여 토큰 확인
+            async function getTOKENBalanceOf(address) {
+              return await contract.methods.balanceOf(address).call();
+            }
+          });
       });
     },
   },

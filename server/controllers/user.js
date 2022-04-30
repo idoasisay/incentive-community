@@ -1,46 +1,42 @@
+const env = require("dotenv");
 const { User } = require("../models");
-const e = require("express");
-const getWeb3 = require("./walletHelper");
-const web3 = getWeb3();
+const web3Helper = require("./walletHelper");
 
+const web3 = web3Helper.getWeb3();
+
+// 회원가입 및 지갑 생성
 module.exports = {
   user: {
     post: async (req, res) => {
-      const { name, password } = req.body;
-
-      // 유저 정보 받아오기
-
       try {
+        // 유저 정보 받아오기
+        const { name, password } = req.body;
+
+        // 유저 확인
         User.findOrCreate({
-          where: {
-            userName: name,
-            password: password,
-          },
-          defaults: {
-            address: "",
-            privateKey: "",
-          },
+          where: { userName: name, password: password },
+          defaults: { address: "", privateKey: "" },
         }).then(([user, created]) => {
+          // 있으면? 있다고 응답
           if (!created) {
-            // 있다고 응답
-            res.status(409).send("User exists");
+            res.status(409).send("이미 가입된 회원입니다.");
+            // 없으면 지갑 생성
           } else {
             const wallet = web3.eth.accounts.create();
+
+            // 유저 업데이트 -> 생성한 지갑 넣기
             User.update(
-              {
-                address: wallet.address,
-                privateKey: wallet.privateKey,
-              },
-              {
-                where: { userName: name },
-              }
+              { address: wallet.address, privateKey: wallet.privateKey },
+              { where: { userName: name } }
             )
-              .then((result) => {
-                res.json(wallet.address);
-              })
-              .catch((err) => {
-                console.error(err);
-              });
+              // wallet.address 응답
+              .then((result) =>
+                res.json({
+                  message: "회원가입이 완료되었습니다.",
+                  data: { address: wallet.address },
+                })
+              )
+              .catch((err) => console.error(err));
           }
         });
       } catch (exception) {
