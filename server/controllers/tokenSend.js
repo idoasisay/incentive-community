@@ -1,14 +1,61 @@
 const { User } = require("../models");
-const e = require("express");
-const getWeb3 = require("./walletHelper");
-const web3 = getWeb3();
+const web3Helper = require("./walletHelper");
+const {
+  contractABI,
+  contractAddress,
+} = require("../source/tokenInfomation.json");
 
-//이번에는 ERC20의 transfer() 함수를 호출하는 setTransfer() 함수를 만들어,
-// 커뮤니티 유저가 다른 유저에게 토큰을 보낼 수 있도록 합니다.
-// 서버 -> 유저 토큰 제공이랑 똑같은 거 아닙니까.
+const web3 = web3Helper.getWeb3();
 
 module.exports = {
   tokenSend: {
-    post: async (req, res) => {},
+    post: async (req, res) => {
+      // "1000000000000000000"
+      const { fromUserName, toUserName, amount } = req.body;
+      // from 유저 -> to 유저 전송
+      const fromUser = await User.findOne({where: { userName: fromUserName }});
+      const toUser = await User.findOne({ where: { userName: toUserName } });
+
+      if(!fromUser || !toUser) res.status(409).send('유저가 없습니다.');
+
+      const options = {
+        from: fromUser.dataValues.address,
+        gasPrice: 100,
+        gas: 100000
+      }
+
+      // 콘트랙트 받기
+      let contract = new web3.eth.Contract(contractABI, contractAddress);
+      // web3.eth.personal.newAccount(password, [callback])
+
+      const data = contract.methods.transfer(toUser.dataValues.address, '10000000000');
+      data.send(options)
+      console.log(data);
+      res.send('');
+        async function getTOKENBalanceOf(address) {
+          return await contract.methods.balanceOf(address).call();
+        }
+    },
   },
 };
+
+// //
+// var rawTransaction = { to: contractAddress, gas: 100000, data: data };
+
+// web3.eth.accounts
+//   .signTransaction(rawTransaction, fromUser.dataValues.privateKey)
+//   .then((signedTx) =>
+//     web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+//   )
+//   .then((req) => {
+//     getTOKENBalanceOf(toUser.dataValues.address).then((balance) => {
+//       res.json({
+//         message: `${balance}`,
+//       });
+//     });
+//   });
+//   async function getTOKENBalanceOf(address) {
+//     return await contract.methods.balanceOf(address).call();
+//   }
+// },
+// },
