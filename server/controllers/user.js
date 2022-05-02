@@ -15,25 +15,23 @@ module.exports = {
         // 유저 확인
         User.findOrCreate({
           where: { userName: name, password: password },
-          defaults: { address: "", privateKey: "" },
-        }).then(([user, created]) => {
+          defaults: { address: "", ethAmount: "0", tokenAmount: "0" },
+        }).then(async ([user, created]) => {
           // 있으면? 있다고 응답
           if (!created) {
             res.status(409).send("이미 가입된 회원입니다.");
+
             // 없으면 지갑 생성
           } else {
-            const wallet = web3.eth.accounts.create();
+            const wallet = await web3.eth.personal.newAccount(password);
 
             // 유저 업데이트 -> 생성한 지갑 넣기
-            User.update(
-              { address: wallet.address, privateKey: wallet.privateKey },
-              { where: { userName: name } }
-            )
+            User.update({ address: wallet }, { where: { userName: name } })
               // wallet.address 응답
               .then((result) =>
                 res.json({
                   message: "회원가입이 완료되었습니다.",
-                  data: { address: wallet.address },
+                  data: { address: wallet },
                 })
               )
               .catch((err) => console.error(err));
