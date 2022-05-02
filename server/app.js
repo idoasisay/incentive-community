@@ -3,7 +3,6 @@ const cors = require("cors");
 const morgan = require("morgan");
 const indexRoute = require("./router/index");
 const { sequelize } = require("./models/index");
-const { watchEtherTransfers } = require("./controllers/watcher");
 
 const app = express();
 const port = 4000;
@@ -22,11 +21,10 @@ app.use("/", indexRoute);
 
 // 서버 생성
 const server = app.listen(port, () => {
-  console.log(`✅ サーバーが生きています ${port}!`);
-  watchEtherTransfers();
+  console.log(`✅ 서버 연결 중 : ${port}`);
 });
 sequelize
   .sync({ force: false })
-  .then(() => console.log("✅ やった! DATABASE あるよ!"))
+  .then(() => console.log(`✅ DB 연결 중`))
   .catch((err) => console.error(err));
 module.exports = server;
