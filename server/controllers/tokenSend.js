@@ -9,8 +9,13 @@ const web3 = web3Helper.getWeb3();
 
 module.exports = {
   tokenSend: {
-    post: async (req, res) => {
-      // "1000000000000000000"
+    post: async (req, res) => {},
+  },
+};
+
+// 토큰 진짜로 전송하는 건 이쪽
+/*
+// "1000000000000000000"
       const { fromUserName, toUserName, amount } = req.body;
       // from 유저 -> to 유저 전송
       const fromUser = await User.findOne({where: { userName: fromUserName }});
@@ -27,35 +32,15 @@ module.exports = {
       // 콘트랙트 받기
       let contract = new web3.eth.Contract(contractABI, contractAddress);
       // web3.eth.personal.newAccount(password, [callback])
+      web3.eth.personal.unlockAccount(fromUser.dataValues.address, fromUser.dataValues.password, 600).then(console.log('Account unlocked!'))
 
-      const data = contract.methods.transfer(toUser.dataValues.address, '10000000000');
-      data.send(options)
-      console.log(data);
+      const data = contract.methods.transfer(toUser.dataValues.address, amount);
+      data.send(options, (err, tx)=> {
+        if(err) console.log(err);
+        console.log(tx);
+      })
       res.send('');
         async function getTOKENBalanceOf(address) {
           return await contract.methods.balanceOf(address).call();
         }
-    },
-  },
-};
-
-// //
-// var rawTransaction = { to: contractAddress, gas: 100000, data: data };
-
-// web3.eth.accounts
-//   .signTransaction(rawTransaction, fromUser.dataValues.privateKey)
-//   .then((signedTx) =>
-//     web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-//   )
-//   .then((req) => {
-//     getTOKENBalanceOf(toUser.dataValues.address).then((balance) => {
-//       res.json({
-//         message: `${balance}`,
-//       });
-//     });
-//   });
-//   async function getTOKENBalanceOf(address) {
-//     return await contract.methods.balanceOf(address).call();
-//   }
-// },
-// },
+ */

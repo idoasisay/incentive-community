@@ -1,3 +1,4 @@
+const env = require("dotenv");
 const { User } = require("../models");
 const web3Helper = require("./walletHelper");
 const {
@@ -11,6 +12,8 @@ async function getServerAccount() {
   }).then((data) => data);
 }
 
+env.config();
+
 const web3 = web3Helper.getWeb3();
 
 module.exports = {
@@ -19,16 +22,21 @@ module.exports = {
       const server = await getServerAccount();
 
       User.findOne({ where: { userName: req.body.name } }).then((user) => {
-        if(!user) res.status(409).json({ message: "유저가 없습니다." });
+        if (!user) res.status(409).json({ message: "유저가 없습니다." });
 
-        const contract = new web3.eth.Contract(contractABI, contractAddress, { from: server.address });
-
-        const data = contract.methods.transfer(user.address, "1000000000000000000").encodeABI();
+        const contract = new web3.eth.Contract(contractABI, contractAddress, {
+          from: server.address,
+        });
+        const data = contract.methods
+          .transfer(user.address, "1000000000000000000")
+          .encodeABI();
         const rawTransaction = { to: contractAddress, gas: 100000, data: data };
 
         web3.eth.accounts
-          .signTransaction(rawTransaction, server.privateKey)
-          .then((signedTx) => web3.eth.sendSignedTransaction(signedTx.rawTransaction))
+          .signTransaction(rawTransaction, process.env.SERVER_PRIVATEKEY)
+          .then((signedTx) =>
+            web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+          )
           .then(async (req) => {
             const balance = await getTOKENBalanceOf(user.address);
 
