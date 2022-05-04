@@ -107,7 +107,6 @@ contract SimpleToken is ERC20Interface {
         override
         returns (bool)
     {
-        uint256 currentAllownace = _allowances[spender][msg.sender];
         require(
             _balances[msg.sender] >= amount,
             "ERC20: The amount to be transferred exceeds the amount of tokens held by the owner."
