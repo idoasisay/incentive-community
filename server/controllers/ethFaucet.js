@@ -65,7 +65,7 @@ module.exports = {
           password: "ganacheServer",
           address: accounts[0],
           ethAmount: balance,
-          tokenAmount: "0"
+          tokenAmount: "0",
         },
       }).then(([user, created]) => res.status(200).json(user));
     },
