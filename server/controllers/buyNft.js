@@ -41,7 +41,7 @@ module.exports = {
           });
 
         contract.methods
-          .approve(erc721Address, "200000000000000000006")
+          .approve(erc721Address, "100000000000000000001")
           .send(options, (err, tx) => {
             if (err) console.log(err);
           });
@@ -50,7 +50,6 @@ module.exports = {
           .allowance(user.address, erc721Address)
           .call();
 
-        // 확인했는데 왜 그러냐...
         // console.log(allowance);
         const data721 = contract721.methods
           .mintNFT(user.address, tokenURL)
@@ -71,9 +70,12 @@ module.exports = {
           )
           .then(async (req) => {
             console.log(req);
+            res.json({
+              message: "NFT를 생성했습니다.",
+              data: { transaction: req.transactionHash },
+            });
           });
       });
-      res.end();
     },
   },
 };
