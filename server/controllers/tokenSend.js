@@ -4,10 +4,8 @@ const {
   contractABI,
   contractAddress,
 } = require("../source/tokenInfomation.json");
-const Web3 = require("web3");
-const web3 = new Web3(
-  new Web3.providers.WebsocketProvider("ws://127.0.0.1:7545")
-);
+
+const web3 = web3Helper.getWeb3();
 
 module.exports = {
   tokenSend: {
@@ -19,7 +17,7 @@ module.exports = {
       });
       const toUser = await User.findOne({ where: { userName: toUserName } });
 
-      if (!fromUser || !toUser) res.status(409).send("유저가 없습니다.");
+      if (!fromUser || !toUser) res.status(400).send("유저가 없습니다.");
 
       const options = {
         from: fromUser.dataValues.address,

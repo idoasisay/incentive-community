@@ -1,9 +1,10 @@
 const env = require("dotenv");
 const { User } = require("../models");
 const web3Helper = require("./walletHelper");
-const web3 = web3Helper.getWeb3();
 
 env.config();
+
+const web3 = web3Helper.getWeb3();
 
 // 가나슈 로컬 테스트넷에서 1EH 받는 API 작성
 module.exports = {
@@ -13,7 +14,7 @@ module.exports = {
         // 유저
         const user = await User.findOne({ where: { userName: req.body.name } });
 
-        if (!user) res.status(409).json({ message: "유저가 없습니다." });
+        if (!user) res.status(400).json({ message: "유저가 없습니다." });
         else {
           const { userName, address } = user.dataValues;
 
@@ -22,7 +23,7 @@ module.exports = {
             .signTransaction(
               {
                 to: address,
-                value: "10000000000000000",
+                value: "1000000000000000000",
                 gas: 2000000,
               },
               process.env.GANACHE_PRIVATEKEY
@@ -30,7 +31,7 @@ module.exports = {
             .then((data) => {
               web3.eth.sendSignedTransaction(data.rawTransaction);
               web3.eth.getBalance(address).then((bal) => {
-                res.json({
+                res.status(201).json({
                   message: "1 이더 지급이 완료되었습니다.",
                   data: {
                     userName: userName,
@@ -53,6 +54,8 @@ module.exports = {
     get: async (req, res) => {
       // 어카운트 중 1개만 빼옴
       const accounts = await web3.eth.getAccounts();
+      if (!accounts)
+        res.status(500).json({ message: "어카운트가 연결되지 않았습니다." });
       // 해당 계좌 잔액 확인
       const balance = await web3.eth.getBalance(accounts[0]);
 
@@ -67,7 +70,9 @@ module.exports = {
           ethAmount: balance,
           tokenAmount: "0",
         },
-      }).then(([user, created]) => res.status(200).json(user));
+      }).then(([user, created]) =>
+        res.status(200).json({ message: "가나슈 계정이 생성되었습니다." })
+      );
     },
   },
 };

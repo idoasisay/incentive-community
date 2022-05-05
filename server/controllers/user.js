@@ -29,9 +29,9 @@ module.exports = {
             User.update({ address: wallet }, { where: { userName: name } })
               // wallet.address 응답
               .then((result) =>
-                res.json({
+                res.status(201).json({
                   message: "회원가입이 완료되었습니다.",
-                  data: { address: wallet },
+                  data: { id: user.userName, address: wallet },
                 })
               )
               .catch((err) => console.error(err));

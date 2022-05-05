@@ -22,13 +22,13 @@ module.exports = {
       const server = await getServerAccount();
 
       User.findOne({ where: { userName: req.body.name } }).then((user) => {
-        if (!user) res.status(409).json({ message: "유저가 없습니다." });
+        if (!user) res.status(400).json({ message: "유저가 없습니다." });
 
         const contract = new web3.eth.Contract(contractABI, contractAddress, {
           from: server.address,
         });
         const data = contract.methods
-          .transfer(user.address, "1000000000000000000")
+          .transfer(user.address, "10000000000000000000")
           .encodeABI();
         const rawTransaction = { to: contractAddress, gas: 100000, data: data };
 
@@ -42,7 +42,7 @@ module.exports = {
 
             // 응답
             res.status(201).json({
-              message: "1 TDD를 받았습니다.",
+              message: "10 TDD를 받았습니다.",
               data: {
                 username: user.username,
                 address: user.address,
