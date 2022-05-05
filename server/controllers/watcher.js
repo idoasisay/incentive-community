@@ -5,9 +5,8 @@ const {
   erc721ABI,
   erc721Address,
 } = require("../source/tokenInfomation.json");
-const soketWeb3 = require("./walletHelper");
-const Web3 = require("web3");
 
+const Web3 = require("web3");
 const web3 = new Web3(
   new Web3.providers.WebsocketProvider("ws://127.0.0.1:7545")
 );
@@ -91,10 +90,14 @@ async function watch721Transfers(CA721, ABI721, CA20, ABI20) {
 
     addresses.forEach(async (e) => {
       let amount = await contract20.methods.balanceOf(e).call();
+      let amount721 = await tokenContract.methods.balanceOf(e).call();
       const user = await User.findOne({ where: { address: e } });
       // User DB 업데이트
       if (user !== null)
-        User.update({ tokenAmount: amount }, { where: { address: e } });
+        User.update(
+          { tokenAmount: amount, nft: amount721 },
+          { where: { address: e } }
+        );
     });
     console.log("------------------------------------------------------");
   });
