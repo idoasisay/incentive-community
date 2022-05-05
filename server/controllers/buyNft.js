@@ -7,12 +7,7 @@ const {
   erc721Address,
   erc721ABI,
 } = require("../source/tokenInfomation.json");
-const Web3 = require("web3");
-const user = require("./user");
-const { raw } = require("mysql");
-const web3 = new Web3(
-  new Web3.providers.WebsocketProvider("ws://127.0.0.1:7545")
-);
+const web3 = web3Helper.getWeb3();
 
 env.config();
 
@@ -27,7 +22,9 @@ module.exports = {
           gasPrice: 100,
           gas: 100000,
         };
-
+        if (!user) res.status(400).json({ message: "유저가 없습니다." });
+        if (user.amount < 10)
+          res.status(400).json({ message: "토큰이 부족합니다." });
         // 유저 주소로 approve
         let contract = new web3.eth.Contract(contractABI, contractAddress);
         let contract721 = new web3.eth.Contract(erc721ABI, erc721Address);
@@ -41,7 +38,7 @@ module.exports = {
           });
 
         contract.methods
-          .approve(erc721Address, "100000000000000000001")
+          .approve(erc721Address, "10000000000000000000")
           .send(options, (err, tx) => {
             if (err) console.log(err);
           });
@@ -70,7 +67,7 @@ module.exports = {
           )
           .then(async (req) => {
             console.log(req);
-            res.json({
+            res.status(201).json({
               message: "NFT를 생성했습니다.",
               data: { transaction: req.transactionHash },
             });
